@@ -7,6 +7,7 @@ import os, sys; sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 import numpy as np
 import torch
 import pytorch_lightning as pl
+from pytorch_lightning.callbacks import ModelCheckpoint
 from cifar_cnn import litmodels
 
 
@@ -77,7 +78,14 @@ def main():
 
     loggers = [pl.loggers.TensorBoardLogger("training/logs")]
 
-    callbacks = [pl.callbacks.EarlyStopping(monitor="val_loss", mode="min", patience=10)]
+    # saves a file like: my/path/sample-mnist-epoch=02-val_loss=0.32.ckpt
+    checkpoint_callback = ModelCheckpoint(monitor='val_loss',dirpath='training/savemodels/',
+    filename='cifar-{epoch:02d}-{val_loss:.2f}',
+    save_top_k=1,
+    mode='min',
+    )
+
+    callbacks = [pl.callbacks.EarlyStopping(monitor="val_loss", mode="min", patience=10),checkpoint_callback]
 
     args.weights_summary = "full"  # Print full summary of the model
     trainer = pl.Trainer.from_argparse_args(args, callbacks=callbacks, logger=loggers, default_root_dir="training/logs")
@@ -86,6 +94,7 @@ def main():
 
     trainer.fit(lit_model, datamodule=data)
     trainer.test(lit_model, datamodule=data)
+    
 
 
 if __name__ == "__main__":

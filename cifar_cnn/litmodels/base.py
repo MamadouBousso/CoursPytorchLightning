@@ -67,3 +67,6 @@ class BaseLitModel(pl.LightningModule):
         logits = self(x)
         self.test_acc(logits, y)
         self.log("test_acc", self.test_acc, on_step=False, on_epoch=True)
+
+    
+    
